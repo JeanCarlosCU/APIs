@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contador de Calorías Ninja</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 { color: #333; }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px;
+    }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { background: #2980b9; }
+    #resultados {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 6px;
+      width: 80%;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Contador de Calorías Ninja</h1>
+  <p>Escribe lo que comiste (ej: <i>burrito y taco</i>)</p>
+
+  <input type="text" id="comida" placeholder="Escribe aquí...">
+  <button onclick="calcular()">Calcular</button>
+
+  <div id="resultados"></div>
+
+  <script>
+    async function calcular() {
+      const query = document.getElementById("comida").value.trim();
+      const div = document.getElementById("resultados");
+      if (!query) return alert("Por favor ingresa un alimento.");
+
+      try {
+        const res = await fetch("/calcular", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          div.innerHTML = `<p style="color:red;">${data.error}</p>`;
+          return;
+        }
+
+        let html = "<h2>Resultados</h2><ul>";
+        data.alimentos.forEach(a => {
+          html += `<li><b>${a.nombre}</b>: ${a.calorias} kcal 
+            (P: ${a.proteina} g, G: ${a.grasa} g, C: ${a.carbohidratos} g)</li>`;
+        });
+        html += `</ul><h3>Total: ${data.total} kcal</h3>`;
+        div.innerHTML = html;
+      } catch (e) {
+        div.innerHTML = `<p style="color:red;">Error al conectar con el servidor.</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
